@@ -4,8 +4,10 @@ import (
 	"customer-api/db"
 	"customer-api/models"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -29,7 +31,9 @@ func GetCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(customer)
+	if err := json.NewEncoder(w).Encode(customer); err != nil {
+		log.Printf("Error encoding customer response: %v", err)
+	}
 }
 
 // GetAllCustomers retrieves all customers
@@ -52,16 +56,35 @@ func GetAllCustomers(w http.ResponseWriter, r *http.Request) {
 		customers = append(customers, customer)
 	}
 
+	if err = rows.Err(); err != nil {
+		http.Error(w, "Error iterating customers", http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(customers)
+	if err := json.NewEncoder(w).Encode(customers); err != nil {
+		log.Printf("Error encoding customers response: %v", err)
+	}
 }
 
 // CreateCustomer adds a new customer
 func CreateCustomer(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 1048576) // 1MB limit
+
 	var customer models.Customer
 	err := json.NewDecoder(r.Body).Decode(&customer)
 	if err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	// Validate input
+	customer.FirstName = strings.TrimSpace(customer.FirstName)
+	customer.LastName = strings.TrimSpace(customer.LastName)
+	customer.Email = strings.TrimSpace(customer.Email)
+
+	if customer.FirstName == "" || customer.LastName == "" || customer.Email == "" {
+		http.Error(w, "First name, last name, and email are required", http.StatusBadRequest)
 		return
 	}
 
@@ -76,11 +99,15 @@ func CreateCustomer(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(customer)
+	if err := json.NewEncoder(w).Encode(customer); err != nil {
+		log.Printf("Error encoding customer response: %v", err)
+	}
 }
 
 // UpdateCustomer updates an existing customer
 func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 1048576) // 1MB limit
+
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {
@@ -95,6 +122,16 @@ func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate input
+	customer.FirstName = strings.TrimSpace(customer.FirstName)
+	customer.LastName = strings.TrimSpace(customer.LastName)
+	customer.Email = strings.TrimSpace(customer.Email)
+
+	if customer.FirstName == "" || customer.LastName == "" || customer.Email == "" {
+		http.Error(w, "First name, last name, and email are required", http.StatusBadRequest)
+		return
+	}
+
 	_, err = db.DB.Exec(
 		"UPDATE customers SET first_name = $1, last_name = $2, email = $3 WHERE id = $4",
 		customer.FirstName, customer.LastName, customer.Email, id)
@@ -104,9 +141,12 @@ func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	customer.ID = id
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(customer)
+	if err := json.NewEncoder(w).Encode(customer); err != nil {
+		log.Printf("Error encoding customer response: %v", err)
+	}
 }
 
 // DeleteCustomer removes a customer by ID
