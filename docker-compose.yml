@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: customer-api-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-customer_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-customer_password}
+      POSTGRES_DB: ${DB_NAME:-customer_api}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - customer-api-postgres-data:/var/lib/postgresql/data
+      - ./script/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-customer_user} -d ${DB_NAME:-customer_api}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  customer-api-postgres-data:

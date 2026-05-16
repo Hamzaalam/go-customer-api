@@ -1,0 +1,152 @@
+basePath: /
+definitions:
+  models.Customer:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  description: API documentation for the Customer API.
+  title: Customer API
+  version: "1.0"
+paths:
+  /api/customers:
+    get:
+      description: Retrieves all customers.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Customer'
+            type: array
+        "500":
+          description: Error fetching customers
+          schema:
+            type: string
+      summary: List customers
+      tags:
+      - customers
+    post:
+      consumes:
+      - application/json
+      description: Creates a new customer.
+      parameters:
+      - description: Customer payload
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/models.Customer'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Customer'
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "500":
+          description: Error creating customer
+          schema:
+            type: string
+      summary: Create a customer
+      tags:
+      - customers
+  /api/customers/{id}:
+    delete:
+      description: Deletes a customer by ID.
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid customer ID
+          schema:
+            type: string
+        "500":
+          description: Error deleting customer
+          schema:
+            type: string
+      summary: Delete a customer
+      tags:
+      - customers
+    get:
+      description: Retrieves a customer by ID.
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Customer'
+        "400":
+          description: Invalid customer ID
+          schema:
+            type: string
+        "404":
+          description: Customer not found
+          schema:
+            type: string
+      summary: Get a customer
+      tags:
+      - customers
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing customer by ID.
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Customer payload
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/models.Customer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Customer'
+        "400":
+          description: Invalid customer ID or input
+          schema:
+            type: string
+        "500":
+          description: Error updating customer
+          schema:
+            type: string
+      summary: Update a customer
+      tags:
+      - customers
+swagger: "2.0"

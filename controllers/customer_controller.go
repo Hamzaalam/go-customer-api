@@ -12,7 +12,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// GetCustomer retrieves a customer by ID
+// GetCustomer retrieves a customer by ID.
+// @Summary Get a customer
+// @Description Retrieves a customer by ID.
+// @Tags customers
+// @Produce json
+// @Param id path int true "Customer ID"
+// @Success 200 {object} models.Customer
+// @Failure 400 {string} string "Invalid customer ID"
+// @Failure 404 {string} string "Customer not found"
+// @Router /api/customers/{id} [get]
 func GetCustomer(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -36,7 +45,14 @@ func GetCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetAllCustomers retrieves all customers
+// GetAllCustomers retrieves all customers.
+// @Summary List customers
+// @Description Retrieves all customers.
+// @Tags customers
+// @Produce json
+// @Success 200 {array} models.Customer
+// @Failure 500 {string} string "Error fetching customers"
+// @Router /api/customers [get]
 func GetAllCustomers(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.DB.Query("SELECT id, first_name, last_name, email FROM customers")
 	if err != nil {
@@ -67,7 +83,17 @@ func GetAllCustomers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// CreateCustomer adds a new customer
+// CreateCustomer adds a new customer.
+// @Summary Create a customer
+// @Description Creates a new customer.
+// @Tags customers
+// @Accept json
+// @Produce json
+// @Param customer body models.Customer true "Customer payload"
+// @Success 201 {object} models.Customer
+// @Failure 400 {string} string "Invalid input"
+// @Failure 500 {string} string "Error creating customer"
+// @Router /api/customers [post]
 func CreateCustomer(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 1048576) // 1MB limit
 
@@ -104,7 +130,18 @@ func CreateCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// UpdateCustomer updates an existing customer
+// UpdateCustomer updates an existing customer.
+// @Summary Update a customer
+// @Description Updates an existing customer by ID.
+// @Tags customers
+// @Accept json
+// @Produce json
+// @Param id path int true "Customer ID"
+// @Param customer body models.Customer true "Customer payload"
+// @Success 200 {object} models.Customer
+// @Failure 400 {string} string "Invalid customer ID or input"
+// @Failure 500 {string} string "Error updating customer"
+// @Router /api/customers/{id} [put]
 func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 1048576) // 1MB limit
 
@@ -149,7 +186,15 @@ func UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// DeleteCustomer removes a customer by ID
+// DeleteCustomer removes a customer by ID.
+// @Summary Delete a customer
+// @Description Deletes a customer by ID.
+// @Tags customers
+// @Param id path int true "Customer ID"
+// @Success 204 "No Content"
+// @Failure 400 {string} string "Invalid customer ID"
+// @Failure 500 {string} string "Error deleting customer"
+// @Router /api/customers/{id} [delete]
 func DeleteCustomer(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])

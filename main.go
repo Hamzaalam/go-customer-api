@@ -2,6 +2,7 @@ package main
 
 import (
 	"customer-api/db"
+	_ "customer-api/docs"
 	"customer-api/routes"
 	"log"
 	"net/http"
@@ -10,8 +11,14 @@ import (
 	"syscall"
 
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
+// @title Customer API
+// @version 1.0
+// @description API documentation for the Customer API.
+// @host localhost:8000
+// @BasePath /
 func main() {
 	db.InitDB()
 	defer db.DB.Close()
@@ -19,9 +26,11 @@ func main() {
 	router := mux.NewRouter()
 
 	routes.RegisterCustomerRoutes(router)
+	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	// Start the server
 	log.Println("Server is running on port 8000...")
+	log.Println("Swagger documentation is available at http://localhost:8000/swagger/index.html")
 
 	// Graceful shutdown handler
 	go func() {
